@@ -15,7 +15,9 @@ const BROWSER_SOURCES = [
   { name: 'Eventbrite', module: eventbrite }
 ];
 const HTTP_SOURCES = [
-  { name: 'Meetup', module: meetup }
+  { name: 'Meetup', module: meetup },
+  { name: 'Eventbrite', module: eventbrite }
+
 ];
 
 class EventScraper {
