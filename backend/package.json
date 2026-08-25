@@ -9,8 +9,8 @@
     "dev": "nodemon server.js",
     "scrape": "node scrapers/runScraper.js",
     "scrape:district": "node scrapers/runDistrictScraper.js",
-    "cron:district": "node scrapers/districtCron.js",
-    "postinstall": "playwright install chromium"
+    "cron:district": "node scrapers/districtCron.js"
+  
   },
   "dependencies": {
     "express": "^4.18.2",

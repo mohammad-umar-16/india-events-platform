@@ -5,7 +5,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import session from 'express-session';
 import passport from 'passport';
-import cron from 'node-cron';
 
 // Import configuration
 import { configurePassport } from './config/passport.js';
@@ -14,9 +13,6 @@ import { configurePassport } from './config/passport.js';
 import authRoutes from './routes/auth.js';
 import eventsRoutes from './routes/events.js';
 import dashboardRoutes from './routes/dashboard.js';
-
-// Import scraper
-import EventScraper from './scrapers/eventScraper.js';
 
 // Load environment variables
 dotenv.config();
@@ -57,8 +53,8 @@ app.use('/api/dashboard', dashboardRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     timestamp: new Date().toISOString(),
     mongodb: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
   });
@@ -66,8 +62,8 @@ app.get('/health', (req, res) => {
 
 // Root endpoint
 app.get('/', (req, res) => {
-  res.json({ 
-    message: 'Sydney Events Platform API',
+  res.json({
+    message: 'India Events Platform API',
     version: '1.0.0',
     endpoints: {
       auth: '/auth',
@@ -90,36 +86,19 @@ app.use((err, req, res, next) => {
 });
 
 // MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/sydney-events';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/india-events';
 
 mongoose.connect(MONGODB_URI)
   .then(() => {
     console.log('✓ Connected to MongoDB');
-    
+
     // Start server
     app.listen(PORT, () => {
       console.log(`✓ Server running on port ${PORT}`);
       console.log(`✓ Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
       console.log(`✓ Environment: ${process.env.NODE_ENV || 'development'}`);
     });
-
-    // Schedule automatic scraping
-    const scrapeInterval = process.env.SCRAPE_INTERVAL_HOURS || 6;
-    console.log(`✓ Scheduled scraping every ${scrapeInterval} hours`);
-    
-    // Run scraper immediately on startup
-    setTimeout(async () => {
-      console.log('\n🔄 Running initial scrape...');
-      const scraper = new EventScraper();
-      await scraper.run();
-    }, 5000); // Wait 5 seconds after startup
-
-    // Schedule regular scraping (every 6 hours by default)
-    cron.schedule(`0 */${scrapeInterval} * * *`, async () => {
-      console.log('\n🔄 Running scheduled scrape...');
-      const scraper = new EventScraper();
-      await scraper.run();
-    });
+    // Scraping is handled by the GitHub Actions scheduled workflow, not here.
   })
   .catch(err => {
     console.error('✗ MongoDB connection error:', err);
