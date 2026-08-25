@@ -1,5 +1,4 @@
-// EventsPage.js - full file
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import EventCard from '../components/EventCard';
 import { eventsAPI } from '../services/api';
 import toast from 'react-hot-toast';
@@ -29,6 +28,7 @@ function EventsPage() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const isFirstLoadRef = useRef(true);
 
   useEffect(() => {
     const timer = setTimeout(() => setSearchTerm(searchInput), 400);
@@ -61,8 +61,10 @@ function EventsPage() {
     }
   }, []);
 
-  const isFirstRender = events.length === 0 && loading;
-  useEffect(() => { fetchEvents(isFirstRender); /* eslint-disable-next-line */ }, [fetchEvents]);
+  useEffect(() => {
+    fetchEvents(isFirstLoadRef.current);
+    isFirstLoadRef.current = false;
+  }, [fetchEvents]);
   useEffect(() => { fetchCategories(); }, [fetchCategories]);
 
   const activeFilterCount = (selectedCategory ? 1 : 0) + (searchTerm ? 1 : 0);
