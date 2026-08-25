@@ -25,6 +25,7 @@ export async function scrape(browser, city) {
     await page.waitForTimeout(2000); // let client-side rendering settle
     await page.waitForSelector('.event-card, [class*="event-card"], article', { timeout: 10000 }).catch(() => {});
     await autoScrollToLoadImages(page); // trigger lazy-loaded images before extracting
+    await page.waitForTimeout(1500); // give lazy images time to finish loading
 
     const raw = await page.evaluate(() => {
       const cards = document.querySelectorAll('.event-card, [class*="event-card"], article[class*="event"]');
@@ -40,7 +41,16 @@ export async function scrape(browser, city) {
           link: linkEl?.href,
           dateStr: dateEl?.textContent?.trim() || dateEl?.getAttribute('datetime'),
           venue: venueEl?.textContent?.trim(),
-          imageUrl: imgEl?.src,
+          // Real src may be a 1x1 lazy-load placeholder gif until the image
+          // scrolls into view; check common lazy-load attributes as fallback.
+          imageUrl: (imgEl?.src && !imgEl.src.startsWith('data:'))
+            ? imgEl.src
+            : (imgEl?.getAttribute('data-src')
+              || imgEl?.getAttribute('data-lazy-src')
+              || imgEl?.getAttribute('data-original')
+              || imgEl?.getAttribute('data-echo')
+              || imgEl?.src
+              || ''),
           priceInfo: priceEl?.textContent?.trim()
         };
       }).filter(e => e.title && e.link);

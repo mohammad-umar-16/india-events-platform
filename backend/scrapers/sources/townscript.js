@@ -20,6 +20,7 @@ export async function scrape(browser, city) {
     await page.waitForTimeout(3000); // Angular SPA needs real time to bootstrap and render
     await page.waitForSelector('.card-container, .event-card, [class*="event-card"]', { timeout: 10000 }).catch(() => {});
     await autoScrollToLoadImages(page); // trigger lazy-loaded images before extracting
+    await page.waitForTimeout(1500); // let blur-up placeholders finish swapping to sharp images
 
     const raw = await page.evaluate(() => {
       const cards = document.querySelectorAll('.card-container, .event-card, [class*="event-card"]');
@@ -42,6 +43,11 @@ export async function scrape(browser, city) {
     });
 
     raw.forEach(item => {
+      // Imgix blur-up placeholders sometimes still linger in src at extraction
+      // time even after the wait above - strip the blur param as a fallback.
+      const cleanImage = item.imageUrl
+        ? item.imageUrl.replace(/([?&])blur=\d+&?/i, '$1').replace(/[?&]$/, '')
+        : '';
       events.push({
         title: item.title,
         dateTime: parseLooseDate(item.dateStr),
@@ -51,7 +57,7 @@ export async function scrape(browser, city) {
         description: item.title,
         category: normalizeCategory(item.title),
         tags: [],
-        imageUrl: item.imageUrl || '',
+        imageUrl: cleanImage,
         priceInfo: item.priceInfo || '',
         sourceWebsite: 'Townscript',
         originalUrl: item.link

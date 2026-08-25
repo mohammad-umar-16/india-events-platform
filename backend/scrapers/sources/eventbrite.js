@@ -1,4 +1,6 @@
-// Eventbrite India - hybrid rendering, Playwright for safety/consistency.
+import axios from 'axios';
+import { normalizeCategory } from '../utils/categoryMap.js';
+
 const CITY_SLUGS = {
   Delhi: 'india--new-delhi',
   Mumbai: 'india--mumbai',
@@ -6,69 +8,66 @@ const CITY_SLUGS = {
   Hyderabad: 'india--hyderabad',
   Pune: 'india--pune'
 };
-import { newStealthPage, autoScrollToLoadImages } from '../utils/browser.js';
-import { normalizeCategory } from '../utils/categoryMap.js';
 
-export async function scrape(browser, city) {
+// Eventbrite embeds clean Schema.org JSON-LD event data inside
+// window.__SERVER_DATA__.jsonld[0].itemListElement[].item - confirmed
+// via live page dump. No DOM parsing needed; each item already has
+// name/url/image/startDate/location(address+geo).
+export async function scrape(city) {
   const slug = CITY_SLUGS[city];
   if (!slug) return [];
 
-  const { context, page } = await newStealthPage(browser);
   const events = [];
-
   try {
-    await page.goto(`https://www.eventbrite.com/d/${slug}/events/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForTimeout(2000);
-    await page.waitForSelector('[data-testid="search-event-card"], .search-event-card', { timeout: 10000 }).catch(() => {});
-    await autoScrollToLoadImages(page); // trigger lazy-loaded images before extracting
-
-    const raw = await page.evaluate(() => {
-      const cards = document.querySelectorAll('[data-testid="search-event-card"], .search-event-card, .event-card');
-      return Array.from(cards).map(card => {
-        const titleEl = card.querySelector('h3, h2, [class*="title"], [class*="Title"]');
-        const linkEl = card.querySelector('a[href*="/e/"]');
-        const dateEl = card.querySelector('[class*="date"], time, [datetime]');
-        const venueEl = card.querySelector('[class*="venue"], [class*="location"]');
-        const imgEl = card.querySelector('img');
-        const priceEl = card.querySelector('[class*="price"]');
-        return {
-          title: titleEl?.textContent?.trim(),
-          link: linkEl?.href,
-          dateStr: dateEl?.textContent?.trim() || dateEl?.getAttribute('datetime'),
-          venue: venueEl?.textContent?.trim(),
-          imageUrl: imgEl?.src,
-          priceInfo: priceEl?.textContent?.trim()
-        };
-      }).filter(e => e.title && e.link);
+    const { data } = await axios.get(`https://www.eventbrite.com/d/${slug}/events/`, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
+      timeout: 15000
     });
 
-    raw.forEach(item => {
+    const marker = 'window.__SERVER_DATA__ = ';
+    const startIdx = data.indexOf(marker);
+    if (startIdx === -1) {
+      console.error(`[Eventbrite] ${city}: __SERVER_DATA__ not found on page`);
+      return [];
+    }
+
+    // brace-matching extraction since the JSON is inlined in a <script> tag, not isolated
+    const jsonStart = startIdx + marker.length;
+    let depth = 0, i = jsonStart, started = false;
+    for (; i < data.length; i++) {
+      if (data[i] === '{') { depth++; started = true; }
+      else if (data[i] === '}') { depth--; if (started && depth === 0) break; }
+    }
+    const serverData = JSON.parse(data.slice(jsonStart, i + 1));
+
+    const items = serverData?.jsonld?.[0]?.itemListElement || [];
+    items.forEach(entry => {
+      const ev = entry.item;
+      if (!ev?.name || !ev?.url) return;
+
+      const addr = ev.location?.address;
+      const venueAddress = addr
+        ? [addr.streetAddress, addr.addressLocality, addr.addressRegion, addr.postalCode].filter(Boolean).join(', ')
+        : `${city}, India`;
+
       events.push({
-        title: item.title,
-        dateTime: parseLooseDate(item.dateStr),
-        venueName: item.venue || 'TBA',
-        venueAddress: `${city}, India`,
+        title: ev.name,
+        dateTime: ev.startDate ? new Date(ev.startDate) : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+        venueName: ev.location?.name || 'TBA',
+        venueAddress,
         city,
-        description: item.title,
-        category: normalizeCategory(item.title),
+        description: ev.description || `Eventbrite event - ${ev.name}`,
+        category: normalizeCategory(ev.name),
         tags: [],
-        imageUrl: item.imageUrl || '',
-        priceInfo: item.priceInfo || '',
+        imageUrl: ev.image || '',
+        priceInfo: '',
         sourceWebsite: 'Eventbrite',
-        originalUrl: item.link
+        originalUrl: ev.url
       });
     });
   } catch (err) {
     console.error(`[Eventbrite] ${city} scrape failed:`, err.message);
-  } finally {
-    await context.close();
   }
 
   return events;
-}
-
-function parseLooseDate(dateStr) {
-  if (!dateStr) return new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-  const parsed = new Date(dateStr);
-  return isNaN(parsed.getTime()) ? new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) : parsed;
 }
