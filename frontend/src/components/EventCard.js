@@ -1,9 +1,11 @@
+// EventCard.js - full file
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import EmailCaptureModal from './EmailCaptureModal';
 
 function EventCard({ event }) {
   const [showModal, setShowModal] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false); // fallback to placeholder instead of vanishing
 
   const formatDate = (dateString) => {
     try { return format(new Date(dateString), 'EEE, MMM d, yyyy'); } catch { return 'Date TBA'; }
@@ -16,17 +18,17 @@ function EventCard({ event }) {
     return text.length <= maxLength ? text : text.substring(0, maxLength) + '...';
   };
 
+  const showImage = event.imageUrl && !imgFailed;
+
   return (
     <>
       <div className="event-card">
         <div className="event-image-wrap">
-          {event.imageUrl ? (
+          {showImage ? (
             <img src={event.imageUrl} alt={event.title} className="event-image"
-              onError={(e) => { e.target.style.display = 'none'; }} />
+              onError={() => setImgFailed(true)} />
           ) : (
-            <div className="event-image" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3rem', opacity: 0.35 }}>
-              🎉
-            </div>
+            <div className="event-image-placeholder">🎉</div>
           )}
         </div>
 
@@ -52,7 +54,7 @@ function EventCard({ event }) {
           {event.description && <p className="event-description">{truncateText(event.description)}</p>}
 
           <div className="event-footer">
-            <span className="event-source">via {event.sourceWebsite}</span>
+            <span className="event-source-tag">via {event.sourceWebsite}</span>
             <button className="btn btn-primary btn-small" onClick={() => setShowModal(true)}>Get Tickets</button>
           </div>
         </div>

@@ -32,7 +32,6 @@ function App() {
             </ul>
           </div>
         </nav>
-        <div className="garland-divider" aria-hidden="true"></div>
 
         <Routes>
           <Route path="/" element={<EventsPage />} />
@@ -40,12 +39,15 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
 
-        <footer style={{ background: 'var(--neel)', color: 'var(--white)', padding: '2rem 0', marginTop: '4rem', textAlign: 'center' }}>
+        <footer className="site-footer">
           <div className="container">
-            <p style={{ margin: 0, opacity: 0.9 }}>India Events · Delhi · Mumbai · Bangalore · Hyderabad · Pune</p>
-            <p style={{ margin: '0.5rem 0 0', fontSize: '0.9rem', opacity: 0.6, fontFamily: "'IBM Plex Mono', monospace" }}>
-              Aggregated from AllEvents, Townscript, Insider, Meetup & Eventbrite
-            </p>
+            <div className="footer-content">
+              <div>
+                <div className="footer-brand">India Events</div>
+                <p className="footer-cities">Delhi · Mumbai · Bangalore · Hyderabad · Pune</p>
+              </div>
+            </div>
+            <p className="footer-sources">Aggregated from AllEvents, Townscript, District, Meetup & Eventbrite</p>
           </div>
         </footer>
       </div>
