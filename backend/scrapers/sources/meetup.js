@@ -1,13 +1,3 @@
-// Meetup - Next.js app. Real data lives in a <script id="__NEXT_DATA__"> JSON
-// blob (Apollo cache), NOT in scrapeable DOM classes - confirmed from a live
-// page dump. This is axios+cheerio (no browser needed) extracting that JSON
-// and recursively collecting Event-typed nodes, which is far more robust
-// than guessing CSS selectors on a Next.js app.
-//
-// NOTE: the dump used to confirm this was a topic/groups page, not the
-// /find/ events search page, so exact Event field names are a best-effort
-// guess (title/name, dateTime/startTime, venue, eventUrl/url, imageUrl) -
-// verify against a real /find/ events page dump if this returns 0 results.
 import axios from 'axios';
 import * as cheerio from 'cheerio';
 import { normalizeCategory } from '../utils/categoryMap.js';
@@ -20,15 +10,35 @@ const CITY_LOCATIONS = {
   Pune: 'in--pune'
 };
 
+// Meetup's __NEXT_DATA__ contains an Apollo normalized cache
+// (props.pageProps.__APOLLO_STATE__): entities are stored flat, keyed
+// "Type:id". title/dateTime/eventUrl are inlined directly on each Event
+// entity, but its photo is a SEPARATE PhotoInfo entity referenced via
+// {"__ref": "PhotoInfo:id"} (PhotoInfo is reused across events + member
+// avatars, so Apollo normalizes it) - confirmed via live page dump.
+// We resolve that ref ourselves instead of expecting it inlined.
 function collectEventNodes(obj, found = []) {
   if (!obj || typeof obj !== 'object') return found;
-  if (obj.__typename && /event/i.test(obj.__typename) && (obj.title || obj.name)) {
+  // exact match, not /event/i - that regex also matched
+  // RecommendedEventsEdge/RecommendedEventsConnection junk
+  if (obj.__typename === 'Event' && (obj.title || obj.name) && obj.id) {
     found.push(obj);
   }
   for (const key of Object.keys(obj)) {
     collectEventNodes(obj[key], found);
   }
   return found;
+}
+
+function resolvePhotoUrl(eventNode, entityMap) {
+  for (const key of Object.keys(eventNode)) {
+    const val = eventNode[key];
+    if (val && typeof val === 'object' && typeof val.__ref === 'string' && val.__ref.startsWith('PhotoInfo:')) {
+      const photo = entityMap[val.__ref];
+      if (photo?.highResUrl) return photo.highResUrl;
+    }
+  }
+  return '';
 }
 
 export async function scrape(city) {
@@ -50,6 +60,7 @@ export async function scrape(city) {
     }
 
     const nextData = JSON.parse(nextDataRaw);
+    const entityMap = nextData?.props?.pageProps?.__APOLLO_STATE__ || {};
     const nodes = collectEventNodes(nextData);
 
     nodes.forEach(node => {
@@ -59,7 +70,7 @@ export async function scrape(city) {
 
       const dateStr = node.dateTime || node.startTime || node.startDate;
       const venue = node.venue?.name || node.venue?.address || '';
-      const imageUrl = node.keyEventPhoto?.standardUrl || node.image?.url || node.eventPhoto?.highResUrl || '';
+      const imageUrl = resolvePhotoUrl(node, entityMap);
 
       const cat = normalizeCategory(title);
       events.push({
