@@ -52,7 +52,7 @@ function EventCard({ event, initiallySaved = false, onUnsave }) {
         <div className="event-image-wrap">
           {showImage ? (
             <img src={event.imageUrl} alt={event.title} className="event-image"
-              onError={() => setImgFailed(true)} />
+              referrerPolicy="no-referrer" onError={() => setImgFailed(true)} />
           ) : (
             <div className="event-image-placeholder">🎉</div>
           )}
