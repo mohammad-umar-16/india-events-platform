@@ -1,4 +1,12 @@
-import axios from 'axios';
+// Eventbrite - now requires a real browser fingerprint. Plain axios+headers
+// requests get rejected with 405 even with full browser-style headers -
+// confirmed the site itself is live and serving real listings (checked via
+// search), so this is bot detection, not a dead endpoint. Moved to
+// Playwright like AllEvents/Townscript. The page still embeds clean
+// Schema.org JSON-LD at window.__SERVER_DATA__.jsonld[0].itemListElement -
+// same structure as before, just extracted via page.evaluate now instead
+// of axios+regex.
+import { newStealthPage } from '../utils/browser.js';
 import { normalizeCategory } from '../utils/categoryMap.js';
 
 const CITY_SLUGS = {
@@ -9,46 +17,23 @@ const CITY_SLUGS = {
   Pune: 'india--pune'
 };
 
-// Eventbrite embeds clean Schema.org JSON-LD event data inside
-// window.__SERVER_DATA__.jsonld[0].itemListElement[].item - confirmed
-// via live page dump. No DOM parsing needed; each item already has
-// name/url/image/startDate/location(address+geo).
-export async function scrape(city) {
+export async function scrape(browser, city) {
   const slug = CITY_SLUGS[city];
   if (!slug) return [];
 
+  const { context, page } = await newStealthPage(browser);
   const events = [];
+
   try {
-    const { data } = await axios.get(`https://www.eventbrite.com/d/${slug}/events/`, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Referer': 'https://www.eventbrite.com/',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Site': 'same-origin'
-      },
-      timeout: 15000
+    await page.goto(`https://www.eventbrite.com/d/${slug}/events/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForTimeout(1500); // let any late scripts finish setting window.__SERVER_DATA__
+
+    const items = await page.evaluate(() => {
+      // eslint-disable-next-line no-undef
+      const data = window.__SERVER_DATA__;
+      return data?.jsonld?.[0]?.itemListElement || [];
     });
 
-    const marker = 'window.__SERVER_DATA__ = ';
-    const startIdx = data.indexOf(marker);
-    if (startIdx === -1) {
-      console.error(`[Eventbrite] ${city}: __SERVER_DATA__ not found on page`);
-      return [];
-    }
-
-    // brace-matching extraction since the JSON is inlined in a <script> tag, not isolated
-    const jsonStart = startIdx + marker.length;
-    let depth = 0, i = jsonStart, started = false;
-    for (; i < data.length; i++) {
-      if (data[i] === '{') { depth++; started = true; }
-      else if (data[i] === '}') { depth--; if (started && depth === 0) break; }
-    }
-    const serverData = JSON.parse(data.slice(jsonStart, i + 1));
-
-    const items = serverData?.jsonld?.[0]?.itemListElement || [];
     items.forEach(entry => {
       const ev = entry.item;
       if (!ev?.name || !ev?.url) return;
@@ -75,6 +60,8 @@ export async function scrape(city) {
     });
   } catch (err) {
     console.error(`[Eventbrite] ${city} scrape failed:`, err.message);
+  } finally {
+    await context.close();
   }
 
   return events;
