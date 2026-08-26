@@ -44,34 +44,39 @@ function NavSearch() {
   );
 }
 
-function NavAuthSection() {
+function NavCenterLinks() {
+  const { user } = useAuth();
+  return (
+    <ul className="nav-links">
+      <li><Link to="/" className="nav-link">Events</Link></li>
+      {user && <li><Link to="/my-events" className="nav-link">My Events</Link></li>}
+    </ul>
+  );
+}
+
+function NavAuthRight() {
   const { user, logout, loading } = useAuth();
 
   if (loading) return null;
 
   if (!user) {
     return (
-      <li>
-        <button className="nav-link nav-signin-btn" onClick={() => authAPI.loginWithGoogle()}>
-          Sign in with Google
-        </button>
-      </li>
+      <button className="nav-signin-btn" onClick={() => authAPI.loginWithGoogle()}>
+        Sign in with Google
+      </button>
     );
   }
 
   return (
-    <>
-      <li><Link to="/my-events" className="nav-link">My Events</Link></li>
-      <li className="nav-user">
-        {user.picture ? (
-          <img src={user.picture} alt={user.name} className="nav-avatar" />
-        ) : (
-          <span className="nav-avatar-fallback">{user.name?.[0]?.toUpperCase()}</span>
-        )}
-        <span className="nav-username">{user.name?.split(' ')[0]}</span>
-        <button className="nav-signout-btn" onClick={logout}>Sign out</button>
-      </li>
-    </>
+    <div className="nav-user">
+      {user.picture ? (
+        <img src={user.picture} alt={user.name} className="nav-avatar" />
+      ) : (
+        <span className="nav-avatar-fallback">{user.name?.[0]?.toUpperCase()}</span>
+      )}
+      <span className="nav-username">{user.name?.split(' ')[0]}</span>
+      <button className="nav-signout-btn" onClick={logout}>Sign out</button>
+    </div>
   );
 }
 
@@ -102,11 +107,13 @@ function App() {
                 </svg>
                 <span className="nav-logo-text">IndieVents</span>
               </Link>
-              <NavSearch />
-              <ul className="nav-links">
-                <li><Link to="/" className="nav-link">Events</Link></li>
-                <NavAuthSection />
-              </ul>
+              <div className="nav-center">
+                <NavSearch />
+                <NavCenterLinks />
+              </div>
+              <div className="nav-right">
+                <NavAuthRight />
+              </div>
             </div>
           </nav>
 
