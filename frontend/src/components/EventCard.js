@@ -1,11 +1,18 @@
-// EventCard.js - full file
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format } from 'date-fns';
+import toast from 'react-hot-toast';
 import EmailCaptureModal from './EmailCaptureModal';
+import { favoritesAPI, authAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
-function EventCard({ event }) {
+function EventCard({ event, initiallySaved = false, onUnsave }) {
   const [showModal, setShowModal] = useState(false);
-  const [imgFailed, setImgFailed] = useState(false); // fallback to placeholder instead of vanishing
+  const [imgFailed, setImgFailed] = useState(false);
+  const [saved, setSaved] = useState(initiallySaved);
+  const [toggling, setToggling] = useState(false);
+  const { user } = useAuth();
+
+  useEffect(() => { setSaved(initiallySaved); }, [initiallySaved]);
 
   const formatDate = (dateString) => {
     try { return format(new Date(dateString), 'EEE, MMM d, yyyy'); } catch { return 'Date TBA'; }
@@ -16,6 +23,25 @@ function EventCard({ event }) {
   const truncateText = (text, maxLength = 150) => {
     if (!text) return '';
     return text.length <= maxLength ? text : text.substring(0, maxLength) + '...';
+  };
+
+  const handleToggleSave = async () => {
+    if (!user) {
+      toast('Sign in to save events');
+      authAPI.loginWithGoogle();
+      return;
+    }
+    if (toggling) return;
+    setToggling(true);
+    try {
+      const res = await favoritesAPI.toggle(event._id);
+      setSaved(res.data.saved);
+      if (!res.data.saved && onUnsave) onUnsave(event._id); // removes card from My Events list immediately
+    } catch {
+      toast.error('Could not update favorite');
+    } finally {
+      setToggling(false);
+    }
   };
 
   const showImage = event.imageUrl && !imgFailed;
@@ -30,6 +56,14 @@ function EventCard({ event }) {
           ) : (
             <div className="event-image-placeholder">🎉</div>
           )}
+          <button
+            className={`save-heart-btn ${saved ? 'saved' : ''}`}
+            onClick={handleToggleSave}
+            aria-label={saved ? 'Remove from saved events' : 'Save event'}
+            disabled={toggling}
+          >
+            {saved ? '❤️' : '🤍'}
+          </button>
         </div>
 
         <div className="event-content">

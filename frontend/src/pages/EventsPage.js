@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import EventCard from '../components/EventCard';
-import { eventsAPI } from '../services/api';
+import { eventsAPI, favoritesAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const CITIES = ['Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Pune'];
@@ -20,7 +21,9 @@ function SkeletonCard() {
 }
 
 function EventsPage() {
+  const { user } = useAuth();
   const [events, setEvents] = useState([]);
+  const [savedIds, setSavedIds] = useState(new Set());
   const [loading, setLoading] = useState(true);       // first load only - shows skeletons
   const [refreshing, setRefreshing] = useState(false); // subsequent filter changes - dims grid
   const [categories, setCategories] = useState([]);
@@ -66,6 +69,13 @@ function EventsPage() {
     isFirstLoadRef.current = false;
   }, [fetchEvents]);
   useEffect(() => { fetchCategories(); }, [fetchCategories]);
+
+  useEffect(() => {
+    if (!user) { setSavedIds(new Set()); return; }
+    favoritesAPI.getAll()
+      .then(res => setSavedIds(new Set(res.data.events.map(e => e._id))))
+      .catch(() => {});
+  }, [user]);
 
   const activeFilterCount = (selectedCategory ? 1 : 0) + (searchTerm ? 1 : 0);
 
@@ -136,7 +146,9 @@ function EventsPage() {
                 Showing {events.length} event{events.length !== 1 ? 's' : ''} in {selectedCity}
               </div>
               <div className={`events-grid ${refreshing ? 'is-loading' : ''}`}>
-                {events.map(event => <EventCard key={event._id} event={event} />)}
+                {events.map(event => (
+                  <EventCard key={event._id} event={event} initiallySaved={savedIds.has(event._id)} />
+                ))}
               </div>
             </>
           )}

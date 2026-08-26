@@ -27,6 +27,12 @@ export const authAPI = {
   }
 };
 
+// Favorites API
+export const favoritesAPI = {
+  toggle: (eventId) => api.post(`/api/favorites/${eventId}`),
+  getAll: () => api.get('/api/favorites')
+};
+
 // Dashboard API
 export const dashboardAPI = {
   getStats: () => api.get('/api/dashboard/stats'),
