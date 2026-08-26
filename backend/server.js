@@ -5,7 +5,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import session from 'express-session';
 import passport from 'passport';
-import favoritesRoutes from './routes/favorites.js';
 
 // Import configuration
 import { configurePassport } from './config/passport.js';
@@ -14,6 +13,7 @@ import { configurePassport } from './config/passport.js';
 import authRoutes from './routes/auth.js';
 import eventsRoutes from './routes/events.js';
 import dashboardRoutes from './routes/dashboard.js';
+import favoritesRoutes from './routes/favorites.js';
 
 // Load environment variables
 dotenv.config();
@@ -29,7 +29,6 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/api/favorites', favoritesRoutes);
 
 // Session configuration
 app.use(session({
@@ -39,7 +38,8 @@ app.use(session({
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax' // required so Render (backend) and Vercel (frontend) can share the session cookie cross-domain
   }
 }));
 
@@ -48,10 +48,11 @@ app.use(passport.initialize());
 app.use(passport.session());
 configurePassport();
 
-// Routes
+// Routes - registered AFTER session/passport so req.user is populated by the time they run
 app.use('/auth', authRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/favorites', favoritesRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
