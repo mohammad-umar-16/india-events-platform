@@ -1,8 +1,4 @@
-// Townscript - confirmed via live page dump that /in/{city} is a pure client-
-// side Angular SPA shell (<app-root> + loading spinner, no server-rendered
-// content). Needs Playwright, not axios+cheerio - a static fetch only ever
-// gets the empty shell, which is why this returned 0 events before.
-// Bangalore's slug is "bengaluru", not "bangalore" (confirmed from footer nav).
+
 import { newStealthPage, autoScrollToLoadImages } from '../utils/browser.js';
 import { normalizeCategory } from '../utils/categoryMap.js';
 

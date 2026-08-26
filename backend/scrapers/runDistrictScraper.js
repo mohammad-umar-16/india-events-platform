@@ -1,8 +1,4 @@
-// Standalone District scraper - runs independently of the main orchestrator
-// (npm run scrape), since District's direct-API approach was proven working
-// in isolation but something environment-specific broke when imported
-// through the shared eventScraper.js chain. This mirrors the original
-// working standalone script almost exactly, just adding the DB save step.
+
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import crypto from 'crypto';

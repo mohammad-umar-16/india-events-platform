@@ -15,11 +15,6 @@ function NavSearch() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Read the latest location/searchParams inside the debounce effect via
-  // refs instead of listing them as dependencies - putting them in the
-  // deps array would re-fire (and reset) the debounce timer on every
-  // navigation, not just when the user actually types. Refs sidestep
-  // that AND satisfy exhaustive-deps with no disable comment needed.
   const locationRef = useRef(location);
   const searchParamsRef = useRef(searchParams);
   useEffect(() => {

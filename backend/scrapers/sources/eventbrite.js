@@ -1,11 +1,4 @@
-// Eventbrite - now requires a real browser fingerprint. Plain axios+headers
-// requests get rejected with 405 even with full browser-style headers -
-// confirmed the site itself is live and serving real listings (checked via
-// search), so this is bot detection, not a dead endpoint. Moved to
-// Playwright like AllEvents/Townscript. The page still embeds clean
-// Schema.org JSON-LD at window.__SERVER_DATA__.jsonld[0].itemListElement -
-// same structure as before, just extracted via page.evaluate now instead
-// of axios+regex.
+
 import { newStealthPage } from '../utils/browser.js';
 import { normalizeCategory } from '../utils/categoryMap.js';
 
@@ -27,11 +20,6 @@ export async function scrape(browser, city) {
   try {
     let items = [];
 
-    // A single 0-result run is treated as a possible transient hiccup
-    // (slow page load, momentary rate-limit) rather than "genuinely no
-    // events" - confirmed the slug/URL is correct and returns real events
-    // when checked manually, so a real 0 here is more likely timing than
-    // structural. One retry with a longer wait before giving up on the city.
     for (let attempt = 1; attempt <= 2; attempt++) {
       await page.goto(`https://www.eventbrite.com/d/${slug}/events/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await page.waitForTimeout(attempt === 1 ? 1500 : 3000);

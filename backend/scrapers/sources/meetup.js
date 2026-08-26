@@ -10,17 +10,10 @@ const CITY_LOCATIONS = {
   Pune: 'in--pune'
 };
 
-// Meetup's __NEXT_DATA__ contains an Apollo normalized cache
-// (props.pageProps.__APOLLO_STATE__): entities are stored flat, keyed
-// "Type:id". title/dateTime/eventUrl are inlined directly on each Event
-// entity, but its photo is a SEPARATE PhotoInfo entity referenced via
-// {"__ref": "PhotoInfo:id"} (PhotoInfo is reused across events + member
-// avatars, so Apollo normalizes it) - confirmed via live page dump.
-// We resolve that ref ourselves instead of expecting it inlined.
+
 function collectEventNodes(obj, found = []) {
   if (!obj || typeof obj !== 'object') return found;
-  // exact match, not /event/i - that regex also matched
-  // RecommendedEventsEdge/RecommendedEventsConnection junk
+
   if (obj.__typename === 'Event' && (obj.title || obj.name) && obj.id) {
     found.push(obj);
   }

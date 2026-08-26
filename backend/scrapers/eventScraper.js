@@ -7,8 +7,6 @@ import * as townscript from './sources/townscript.js';
 import * as meetup from './sources/meetup.js';
 import * as eventbrite from './sources/eventbrite.js';
 
-// Sources that need a real browser (JS-rendered) vs plain HTTP (server-rendered
-// or, for Meetup, data extracted directly from its __NEXT_DATA__ JSON blob)
 const BROWSER_SOURCES = [
   { name: 'AllEvents', module: allevents },
   { name: 'Townscript', module: townscript },
@@ -24,8 +22,7 @@ class EventScraper {
     return crypto.createHash('md5').update(data).digest('hex');
   }
 
-  // Scrape every source x city combination. Browser-based sources share one
-  // Chromium instance across all calls to avoid repeated launch overhead.
+
   async scrapeAll() {
     console.log('Starting India event scraping...');
     const allScraped = [];

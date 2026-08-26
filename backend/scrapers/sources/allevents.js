@@ -1,7 +1,4 @@
-// AllEvents.in - JS-rendered listing, needs Playwright.
-// NOTE: selectors are best-effort based on typical AllEvents markup (event-card
-// containers with title/venue/date/thumb children). Verify against live DOM
-// periodically - AllEvents changes card markup without notice.
+
 import { newStealthPage, autoScrollToLoadImages } from '../utils/browser.js';
 import { normalizeCategory } from '../utils/categoryMap.js';
 
