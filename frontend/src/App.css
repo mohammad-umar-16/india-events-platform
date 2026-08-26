@@ -1071,3 +1071,45 @@ h1, h2, h3, h4, h5, h6 {
   .nav-center { grid-area: center; flex-wrap: wrap; justify-self: stretch; }
   .nav-search { max-width: 100%; width: 100%; }
 }
+
+/* ===== Comprehensive mobile pass ===== */
+@media (max-width: 480px) {
+  .modal-header { padding: 1.5rem 1.25rem 1rem; }
+  .modal-body { padding: 1.25rem; }
+  .modal-footer { padding: 0.75rem 1.25rem 1.25rem; flex-direction: column-reverse; gap: 0.6rem; }
+  .modal-footer .btn { width: 100%; }
+  .modal-title { font-size: 1.35rem; }
+
+  .save-heart-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 1.3rem;
+  }
+
+  .city-stamps { gap: 0.6rem; margin-bottom: 1.25rem; }
+  .city-stamp { padding: 0.5rem 0.9rem; font-size: 0.75rem; }
+
+  .category-chips { gap: 0.5rem; margin-bottom: 1.25rem; }
+  .category-chip { padding: 0.45rem 0.85rem 0.45rem 1.05rem; font-size: 0.78rem; }
+
+  .about-strip { font-size: 0.85rem; }
+  .site-subtitle { font-size: 0.95rem; }
+
+  .pagination-bar { gap: 0.4rem; }
+  .page-btn { min-width: 34px; height: 34px; padding: 0 0.5rem; font-size: 0.78rem; }
+
+  .event-content { padding: 1.1rem; }
+  .event-title { font-size: 1.15rem; }
+  .event-footer { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+  .event-footer .btn { width: 100%; }
+
+  .footer-content { gap: 1.5rem; }
+  .site-footer { padding: 2rem 0 1.5rem; }
+}
+
+/* Comfortable tap targets for anything clickable on touch devices,
+   below the ~44px accessibility guideline otherwise */
+@media (max-width: 900px) {
+  .city-stamp, .category-chip, .page-btn { min-height: 40px; }
+  .nav-signin-btn, .nav-signout-btn { min-height: 40px; display: inline-flex; align-items: center; }
+}
