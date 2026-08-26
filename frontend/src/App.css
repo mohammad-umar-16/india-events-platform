@@ -119,11 +119,13 @@ h1, h2, h3, h4, h5, h6 {
   font-size: 1.6rem;
   color: var(--haldi);
   text-decoration: none;
+  margin-right: 2.5rem;
+  white-space: nowrap;
 }
 
 .nav-links {
   display: flex;
-  gap: 2rem;
+  gap: 1.75rem;
   align-items: center;
   list-style: none;
 }
@@ -777,7 +779,6 @@ h1, h2, h3, h4, h5, h6 {
   cursor: pointer;
   font: inherit;
   color: inherit;
-  padding: 0.4rem 0.9rem;
 }
 
 .nav-signin-btn {
@@ -786,31 +787,65 @@ h1, h2, h3, h4, h5, h6 {
   border-radius: 999px;
   font-size: 0.85rem;
   font-weight: 600;
+  padding: 0.4rem 0.9rem;
 }
 
 .nav-user {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.6rem;
+  padding-left: 1rem;
+  margin-left: 0.5rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .nav-avatar {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid var(--haldi);
 }
 
+.nav-avatar-fallback {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--sindoor);
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 2px solid var(--haldi);
+}
+
 .nav-username {
+  color: var(--malmal);
   font-size: 0.9rem;
   font-weight: 600;
 }
 
 .nav-signout-btn {
   font-size: 0.75rem;
-  opacity: 0.6;
-  text-decoration: underline;
+  color: var(--malmal);
+  opacity: 0.7;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.nav-signout-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+@media (max-width: 640px) {
+  .nav-brand { margin-right: 1rem; font-size: 1.3rem; }
+  .nav-links { gap: 1rem; flex-wrap: wrap; }
+  .nav-username { display: none; }
 }
 
 /* --- Save/heart button on event cards --- */

@@ -28,9 +28,13 @@ function NavAuthSection() {
     <>
       <li><Link to="/my-events" className="nav-link">My Events</Link></li>
       <li className="nav-user">
-        {user.picture && <img src={user.picture} alt={user.name} className="nav-avatar" />}
+        {user.picture ? (
+          <img src={user.picture} alt={user.name} className="nav-avatar" />
+        ) : (
+          <span className="nav-avatar-fallback">{user.name?.[0]?.toUpperCase()}</span>
+        )}
         <span className="nav-username">{user.name?.split(' ')[0]}</span>
-        <button className="nav-link nav-signout-btn" onClick={logout}>Sign out</button>
+        <button className="nav-signout-btn" onClick={logout}>Sign out</button>
       </li>
     </>
   );
