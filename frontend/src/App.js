@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import EventsPage from './pages/EventsPage';
@@ -15,22 +15,34 @@ function NavSearch() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Read the latest location/searchParams inside the debounce effect via
+  // refs instead of listing them as dependencies - putting them in the
+  // deps array would re-fire (and reset) the debounce timer on every
+  // navigation, not just when the user actually types. Refs sidestep
+  // that AND satisfy exhaustive-deps with no disable comment needed.
+  const locationRef = useRef(location);
+  const searchParamsRef = useRef(searchParams);
+  useEffect(() => {
+    locationRef.current = location;
+    searchParamsRef.current = searchParams;
+  });
+
   useEffect(() => {
     setValue(searchParams.get('search') || '');
   }, [searchParams]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const timer = setTimeout(() => {
-      const current = searchParams.get('search') || '';
+      const current = searchParamsRef.current.get('search') || '';
       if (value === current) return;
 
-      const params = new URLSearchParams(location.pathname === '/' ? location.search : '');
+      const loc = locationRef.current;
+      const params = new URLSearchParams(loc.pathname === '/' ? loc.search : '');
       if (value) params.set('search', value); else params.delete('search');
       navigate(`/${params.toString() ? `?${params.toString()}` : ''}`);
     }, 400);
     return () => clearTimeout(timer);
-  }, [value]);
+  }, [value, navigate]);
 
   return (
     <div className="nav-search">
