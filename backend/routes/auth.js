@@ -3,21 +3,19 @@ import passport from 'passport';
 
 const router = express.Router();
 
-// Google OAuth login
 router.get('/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
 
-// Google OAuth callback
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_URL}/login?error=auth_failed` }),
   (req, res) => {
-    // Successful authentication
-    res.redirect(`${process.env.FRONTEND_URL}/dashboard`);
+    // Admins go to the dashboard; everyone else goes back to the events page
+    const redirectTo = req.user?.role === 'admin' ? '/dashboard' : '/';
+    res.redirect(`${process.env.FRONTEND_URL}${redirectTo}`);
   }
 );
 
-// Get current user
 router.get('/current-user', (req, res) => {
   if (req.user) {
     res.json({
@@ -32,12 +30,9 @@ router.get('/current-user', (req, res) => {
   }
 });
 
-// Logout
 router.post('/logout', (req, res) => {
   req.logout((err) => {
-    if (err) {
-      return res.status(500).json({ error: 'Logout failed' });
-    }
+    if (err) return res.status(500).json({ error: 'Logout failed' });
     res.json({ message: 'Logged out successfully' });
   });
 });

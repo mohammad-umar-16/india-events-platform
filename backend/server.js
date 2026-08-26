@@ -5,6 +5,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import session from 'express-session';
 import passport from 'passport';
+import favoritesRoutes from './routes/favorites.js';
 
 // Import configuration
 import { configurePassport } from './config/passport.js';
@@ -28,6 +29,7 @@ app.use(cors({
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/api/favorites', favoritesRoutes);
 
 // Session configuration
 app.use(session({

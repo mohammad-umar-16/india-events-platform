@@ -2,6 +2,8 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import User from '../models/User.js';
 
+const ADMIN_EMAIL = 'umararshad0.ua@gmail.com'; // only this account gets Dashboard access
+
 export function configurePassport() {
   passport.use(
     new GoogleStrategy(
@@ -12,24 +14,22 @@ export function configurePassport() {
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          // Check if user already exists
           let user = await User.findOne({ googleId: profile.id });
+          const email = profile.emails?.[0]?.value;
 
           if (user) {
-            // Update user info
             user.name = profile.displayName;
             user.picture = profile.photos?.[0]?.value;
             await user.save();
             return done(null, user);
           }
 
-          // Create new user
           user = await User.create({
             googleId: profile.id,
-            email: profile.emails[0].value,
+            email,
             name: profile.displayName,
             picture: profile.photos?.[0]?.value,
-            role: 'admin'
+            role: email === ADMIN_EMAIL ? 'admin' : 'user' // was hardcoded 'admin' for everyone before
           });
 
           done(null, user);
@@ -40,9 +40,7 @@ export function configurePassport() {
     )
   );
 
-  passport.serializeUser((user, done) => {
-    done(null, user.id);
-  });
+  passport.serializeUser((user, done) => { done(null, user.id); });
 
   passport.deserializeUser(async (id, done) => {
     try {
