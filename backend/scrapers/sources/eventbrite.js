@@ -39,11 +39,6 @@ export async function scrape(city) {
       else if (data[i] === '}') { depth--; if (started && depth === 0) break; }
     }
     const serverData = JSON.parse(data.slice(jsonStart, i + 1));
-    if (city === 'Delhi') {
-  console.log(`[Eventbrite DEBUG] jsonld exists:`, !!serverData?.jsonld);
-  console.log(`[Eventbrite DEBUG] jsonld length:`, serverData?.jsonld?.length);
-  console.log(`[Eventbrite DEBUG] itemListElement length:`, serverData?.jsonld?.[0]?.itemListElement?.length);
-}
 
     const items = serverData?.jsonld?.[0]?.itemListElement || [];
     items.forEach(entry => {
