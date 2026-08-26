@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import EventCard from '../components/EventCard';
 import { eventsAPI, favoritesAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -29,16 +30,11 @@ function EventsPage() {
   const [categories, setCategories] = useState([]);
   const [selectedCity, setSelectedCity] = useState('Delhi');
   const [selectedCategory, setSelectedCategory] = useState('');
-  const [searchInput, setSearchInput] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams] = useSearchParams();
+  const searchTerm = searchParams.get('search') || '';
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, pages: 1 });
   const isFirstLoadRef = useRef(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setSearchTerm(searchInput), 400);
-    return () => clearTimeout(timer);
-  }, [searchInput]);
 
   useEffect(() => { setPage(1); }, [selectedCity, selectedCategory, searchTerm]);
 
@@ -119,15 +115,11 @@ function EventsPage() {
               </div>
             )}
 
-            <div className="filter-row-top">
-              <div className="ticket-search">
-                <input type="text" placeholder="Search events..."
-                  value={searchInput} onChange={(e) => setSearchInput(e.target.value)} />
-              </div>
-              {activeFilterCount > 0 && (
+            {activeFilterCount > 0 && (
+              <div className="filter-row-top">
                 <span className="active-filter-badge">{activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active</span>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </div>
 

@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import EventsPage from './pages/EventsPage';
 import MyEventsPage from './pages/MyEventsPage';
@@ -8,6 +8,41 @@ import Login from './pages/Login';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { authAPI } from './services/api';
 import './App.css';
+
+function NavSearch() {
+  const [searchParams] = useSearchParams();
+  const [value, setValue] = useState(searchParams.get('search') || '');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    setValue(searchParams.get('search') || '');
+  }, [searchParams]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const current = searchParams.get('search') || '';
+      if (value === current) return;
+
+      const params = new URLSearchParams(location.pathname === '/' ? location.search : '');
+      if (value) params.set('search', value); else params.delete('search');
+      navigate(`/${params.toString() ? `?${params.toString()}` : ''}`);
+    }, 400);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  return (
+    <div className="nav-search">
+      <input
+        type="text"
+        placeholder="Search events..."
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+      />
+    </div>
+  );
+}
 
 function NavAuthSection() {
   const { user, logout, loading } = useAuth();
@@ -59,7 +94,7 @@ function App() {
           />
 
           <nav className="nav">
-            <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div className="container nav-row">
               <Link to="/" className="nav-logo">
                 <svg className="nav-logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M4 12C4 9.79086 5.79086 8 8 8H24C26.2091 8 28 9.79086 28 12V13C26.3431 13 25 14.3431 25 16C25 17.6569 26.3431 19 28 19V20C28 22.2091 26.2091 24 24 24H8C5.79086 24 4 22.2091 4 20V19C5.65685 19 7 17.6569 7 16C7 14.3431 5.65685 13 4 13V12Z" fill="#F2A93C"/>
@@ -67,6 +102,7 @@ function App() {
                 </svg>
                 <span className="nav-logo-text">IndieVents</span>
               </Link>
+              <NavSearch />
               <ul className="nav-links">
                 <li><Link to="/" className="nav-link">Events</Link></li>
                 <NavAuthSection />
