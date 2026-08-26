@@ -1017,9 +1017,13 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .nav-search {
-  flex: 1;
-  max-width: 420px;
-  margin: 0 auto;
+  width: 320px;
+  max-width: 40vw;
+  flex-shrink: 0;
+}
+
+.nav-links {
+  margin-left: auto; /* pushes auth/links to the far right, matching the search sitting close to the logo on the left */
 }
 
 .nav-search input {
