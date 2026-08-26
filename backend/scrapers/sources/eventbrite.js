@@ -28,6 +28,15 @@ export async function scrape(browser, city) {
     await page.goto(`https://www.eventbrite.com/d/${slug}/events/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.waitForTimeout(1500); // let any late scripts finish setting window.__SERVER_DATA__
 
+    // TEMP DEBUG - remove after checking
+    if (city === 'Delhi') {
+      await page.screenshot({ path: 'eventbrite-debug.png', fullPage: false });
+      const title = await page.title();
+      const hasServerData = await page.evaluate(() => typeof window.__SERVER_DATA__ !== 'undefined');
+      console.log(`[Eventbrite DEBUG] page title: "${title}"`);
+      console.log(`[Eventbrite DEBUG] __SERVER_DATA__ exists: ${hasServerData}`);
+    }
+
     const items = await page.evaluate(() => {
       // eslint-disable-next-line no-undef
       const data = window.__SERVER_DATA__;
