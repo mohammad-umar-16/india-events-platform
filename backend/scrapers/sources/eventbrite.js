@@ -25,23 +25,26 @@ export async function scrape(browser, city) {
   const events = [];
 
   try {
-    await page.goto(`https://www.eventbrite.com/d/${slug}/events/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    await page.waitForTimeout(1500); // let any late scripts finish setting window.__SERVER_DATA__
+    let items = [];
 
-    // TEMP DEBUG - remove after checking
-    if (city === 'Delhi') {
-      await page.screenshot({ path: 'eventbrite-debug.png', fullPage: false });
-      const title = await page.title();
-      const hasServerData = await page.evaluate(() => typeof window.__SERVER_DATA__ !== 'undefined');
-      console.log(`[Eventbrite DEBUG] page title: "${title}"`);
-      console.log(`[Eventbrite DEBUG] __SERVER_DATA__ exists: ${hasServerData}`);
+    // A single 0-result run is treated as a possible transient hiccup
+    // (slow page load, momentary rate-limit) rather than "genuinely no
+    // events" - confirmed the slug/URL is correct and returns real events
+    // when checked manually, so a real 0 here is more likely timing than
+    // structural. One retry with a longer wait before giving up on the city.
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      await page.goto(`https://www.eventbrite.com/d/${slug}/events/`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.waitForTimeout(attempt === 1 ? 1500 : 3000);
+
+      items = await page.evaluate(() => {
+        // eslint-disable-next-line no-undef
+        const data = window.__SERVER_DATA__;
+        return data?.jsonld?.[0]?.itemListElement || [];
+      });
+
+      if (items.length > 0) break;
+      if (attempt === 1) console.log(`[Eventbrite] ${city}: 0 items on first attempt, retrying with longer wait...`);
     }
-
-    const items = await page.evaluate(() => {
-      // eslint-disable-next-line no-undef
-      const data = window.__SERVER_DATA__;
-      return data?.jsonld?.[0]?.itemListElement || [];
-    });
 
     items.forEach(entry => {
       const ev = entry.item;

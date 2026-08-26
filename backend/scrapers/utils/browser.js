@@ -40,11 +40,30 @@ export async function newMobileStealthPage(browser) {
 // (lazy loading) - without this, only cards visible on initial load get a
 // real image and everything below the fold stays empty. Scrolls down in
 // steps, pausing to let each batch load, then scrolls back to top.
-export async function autoScrollToLoadImages(page, { steps = 8, stepDelay = 400 } = {}) {
-  for (let i = 0; i < steps; i++) {
+export async function autoScrollToLoadImages(page, { stepDelay = 350, maxSteps = 40 } = {}) {
+  // Scrolls based on the page's actual scrollHeight instead of a fixed step
+  // count - a fixed count (previously 8 steps) undershoots long listing pages
+  // (AllEvents can have 40-66+ cards plus ad banners interspersed), leaving
+  // lazy-loaded images below the fold never triggered. maxSteps is just a
+  // safety cap against runaway infinite-scroll pages, not the normal exit condition.
+  let steps = 0;
+  let lastHeight = 0;
+  while (steps < maxSteps) {
+    const { scrollY, innerHeight, scrollHeight } = await page.evaluate(() => ({
+      scrollY: window.scrollY,
+      innerHeight: window.innerHeight,
+      scrollHeight: document.body.scrollHeight
+    }));
+
+    if (scrollY + innerHeight >= scrollHeight - 50) break; // reached the bottom
+    if (scrollHeight === lastHeight && steps > 3) break; // page stopped growing, avoid spinning
+
+    lastHeight = scrollHeight;
     await page.evaluate(() => window.scrollBy(0, window.innerHeight * 1.5));
     await page.waitForTimeout(stepDelay);
+    steps++;
   }
+
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(300);
 }

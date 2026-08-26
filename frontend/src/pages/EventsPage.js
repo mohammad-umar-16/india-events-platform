@@ -31,6 +31,8 @@ function EventsPage() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [page, setPage] = useState(1);
+  const [pagination, setPagination] = useState({ total: 0, pages: 1 });
   const isFirstLoadRef = useRef(true);
 
   useEffect(() => {
@@ -38,14 +40,17 @@ function EventsPage() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
+  useEffect(() => { setPage(1); }, [selectedCity, selectedCategory, searchTerm]);
+
   const fetchEvents = useCallback(async (isFirstLoad) => {
     if (isFirstLoad) setLoading(true); else setRefreshing(true);
     try {
-      const params = { city: selectedCity, limit: 100 };
+      const params = { city: selectedCity, limit: 50, page };
       if (selectedCategory) params.category = selectedCategory;
       if (searchTerm) params.search = searchTerm;
       const response = await eventsAPI.getAll(params);
       setEvents(response.data.events);
+      setPagination(response.data.pagination || { total: 0, pages: 1 });
     } catch (error) {
       console.error('Error fetching events:', error);
       toast.error('Failed to load events');
@@ -53,7 +58,7 @@ function EventsPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [selectedCity, selectedCategory, searchTerm]);
+  }, [selectedCity, selectedCategory, searchTerm, page]);
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -146,13 +151,55 @@ function EventsPage() {
                 </div>
               )}
               <div style={{ textAlign: 'center', marginBottom: '2rem', color: 'var(--text-secondary)', fontFamily: "'IBM Plex Mono', monospace", fontSize: '0.9rem' }}>
-                Showing {events.length} event{events.length !== 1 ? 's' : ''} in {selectedCity}
+                Showing {events.length} of {pagination.total} event{pagination.total !== 1 ? 's' : ''} in {selectedCity}
+                {pagination.pages > 1 && ` · page ${page} of ${pagination.pages}`}
               </div>
               <div className={`events-grid ${refreshing ? 'is-loading' : ''}`}>
                 {events.map(event => (
                   <EventCard key={event._id} event={event} initiallySaved={savedIds.has(event._id)} />
                 ))}
               </div>
+
+              {pagination.pages > 1 && (
+                <div className="pagination-bar">
+                  <button
+                    className="page-btn"
+                    disabled={page === 1}
+                    onClick={() => { setPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  >
+                    Prev
+                  </button>
+
+                  {Array.from({ length: pagination.pages }, (_, i) => i + 1)
+                    .filter(n => n === 1 || n === pagination.pages || Math.abs(n - page) <= 1)
+                    .reduce((acc, n, idx, arr) => {
+                      if (idx > 0 && n - arr[idx - 1] > 1) acc.push('...');
+                      acc.push(n);
+                      return acc;
+                    }, [])
+                    .map((n, i) =>
+                      n === '...' ? (
+                        <span key={`ellipsis-${i}`} className="page-ellipsis">...</span>
+                      ) : (
+                        <button
+                          key={n}
+                          className={`page-btn ${page === n ? 'active' : ''}`}
+                          onClick={() => { setPage(n); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                        >
+                          {n}
+                        </button>
+                      )
+                    )}
+
+                  <button
+                    className="page-btn"
+                    disabled={page === pagination.pages}
+                    onClick={() => { setPage(p => Math.min(pagination.pages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                  >
+                    Next
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
