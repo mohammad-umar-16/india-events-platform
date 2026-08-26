@@ -83,9 +83,9 @@ function EventsPage() {
     <div className="events-page">
       <div className="header">
         <div className="container header-content">
-          <h1 className="site-title">India Events</h1>
+          <h1 className="site-title">IndieVents</h1>
           <p className="site-subtitle">Concerts, workshops, festivals and everything in between</p>
-         <p className="about-strip">
+          <p className="about-strip">
             We pull events from <strong>5 platforms</strong> — AllEvents, Townscript, District, Meetup and Eventbrite — into one feed across Delhi, Mumbai, Bangalore, Hyderabad and Pune.
           </p>
         </div>

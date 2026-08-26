@@ -65,7 +65,7 @@ function App() {
                   <path d="M4 12C4 9.79086 5.79086 8 8 8H24C26.2091 8 28 9.79086 28 12V13C26.3431 13 25 14.3431 25 16C25 17.6569 26.3431 19 28 19V20C28 22.2091 26.2091 24 24 24H8C5.79086 24 4 22.2091 4 20V19C5.65685 19 7 17.6569 7 16C7 14.3431 5.65685 13 4 13V12Z" fill="#F2A93C"/>
                   <path d="M13 8V24" stroke="#1B2A4A" strokeWidth="1.5" strokeDasharray="2 2"/>
                 </svg>
-                <span className="nav-logo-text">IN Events</span>
+                <span className="nav-logo-text">IndieVents</span>
               </Link>
               <ul className="nav-links">
                 <li><Link to="/" className="nav-link">Events</Link></li>
@@ -85,7 +85,7 @@ function App() {
             <div className="container">
               <div className="footer-content">
                 <div>
-                  <div className="footer-brand">India Events</div>
+                  <div className="footer-brand">IndieVents</div>
                   <p className="footer-about-text">
                     A single place to browse concerts, workshops, comedy shows and festivals across India — pulled together from AllEvents, Townscript, District, Meetup and Eventbrite so you don't have to check five different sites.
                   </p>

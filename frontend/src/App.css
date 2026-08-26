@@ -752,14 +752,45 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 2rem;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 2.5rem;
   padding-bottom: 2rem;
   border-bottom: 1px solid rgba(255,255,255,0.12);
 }
+
+.footer-col-title {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--haldi);
+  margin-bottom: 0.9rem;
+  font-weight: 600;
+}
+
+.footer-about-text {
+  font-size: 0.9rem;
+  opacity: 0.75;
+  line-height: 1.6;
+  max-width: 320px;
+}
+
+.footer-link-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.footer-link-list a {
+  color: var(--malmal);
+  opacity: 0.75;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: opacity 0.2s;
+}
+
+.footer-link-list a:hover { opacity: 1; color: var(--haldi); }
 
 .footer-brand { font-family: 'Yatra One', cursive; font-size: 1.5rem; color: var(--haldi); margin-bottom: 0.5rem; }
 .footer-cities { opacity: 0.75; font-size: 0.9rem; }
@@ -879,25 +910,37 @@ h1, h2, h3, h4, h5, h6 {
   40% { transform: scale(1.3); }
   100% { transform: scale(1); }
 }
-/* --- Nav logo mark (distinct from hero title, fixes repeated "India Events") --- */
+/* --- Nav logo: icon + wordmark, vertically centered --- */
 .nav-logo {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.65rem;
   text-decoration: none;
+  margin-right: 2.5rem;
+  white-space: nowrap;
+  line-height: 1;
 }
 
 .nav-logo-icon {
   width: 30px;
   height: 30px;
   flex-shrink: 0;
+  display: block;
 }
 
 .nav-logo-text {
   font-family: 'Yatra One', cursive;
-  font-size: 1.35rem;
+  font-size: 1.5rem;
   color: var(--haldi);
-  white-space: nowrap;
+  line-height: 1;
+  position: relative;
+  top: 1px;
+}
+
+@media (max-width: 640px) {
+  .nav-logo { margin-right: 1rem; }
+  .nav-logo-text { font-size: 1.2rem; }
+  .nav-logo-icon { width: 24px; height: 24px; }
 }
 
 /* --- About strip under hero --- */
@@ -914,48 +957,3 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .about-strip strong { color: var(--haldi); font-weight: 600; }
-
-/* --- Expanded footer --- */
-.footer-content {
-  display: grid;
-  grid-template-columns: 1.2fr 1fr 1fr;
-  gap: 2.5rem;
-}
-
-.footer-col-title {
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--haldi);
-  margin-bottom: 0.9rem;
-  font-weight: 600;
-}
-
-.footer-about-text {
-  font-size: 0.9rem;
-  opacity: 0.75;
-  line-height: 1.6;
-  max-width: 320px;
-}
-
-.footer-link-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.footer-link-list a {
-  color: var(--malmal);
-  opacity: 0.75;
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: opacity 0.2s;
-}
-
-.footer-link-list a:hover { opacity: 1; color: var(--haldi); }
-
-@media (max-width: 768px) {
-  .footer-content { grid-template-columns: 1fr; gap: 2rem; }
-  .about-strip { max-width: 100%; }
-}
