@@ -60,7 +60,13 @@ function App() {
 
           <nav className="nav">
             <div className="container" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Link to="/" className="nav-brand">India Events</Link>
+              <Link to="/" className="nav-logo">
+                <svg className="nav-logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M4 12C4 9.79086 5.79086 8 8 8H24C26.2091 8 28 9.79086 28 12V13C26.3431 13 25 14.3431 25 16C25 17.6569 26.3431 19 28 19V20C28 22.2091 26.2091 24 24 24H8C5.79086 24 4 22.2091 4 20V19C5.65685 19 7 17.6569 7 16C7 14.3431 5.65685 13 4 13V12Z" fill="#F2A93C"/>
+                  <path d="M13 8V24" stroke="#1B2A4A" strokeWidth="1.5" strokeDasharray="2 2"/>
+                </svg>
+                <span className="nav-logo-text">IN Events</span>
+              </Link>
               <ul className="nav-links">
                 <li><Link to="/" className="nav-link">Events</Link></li>
                 <NavAuthSection />
@@ -80,7 +86,28 @@ function App() {
               <div className="footer-content">
                 <div>
                   <div className="footer-brand">India Events</div>
-                  <p className="footer-cities">Delhi · Mumbai · Bangalore · Hyderabad · Pune</p>
+                  <p className="footer-about-text">
+                    A single place to browse concerts, workshops, comedy shows and festivals across India — pulled together from AllEvents, Townscript, District, Meetup and Eventbrite so you don't have to check five different sites.
+                  </p>
+                </div>
+
+                <div>
+                  <div className="footer-col-title">Explore</div>
+                  <ul className="footer-link-list">
+                    <li><Link to="/">All Events</Link></li>
+                    <li><Link to="/my-events">My Saved Events</Link></li>
+                  </ul>
+                </div>
+
+                <div>
+                  <div className="footer-col-title">Cities</div>
+                  <ul className="footer-link-list">
+                    <li>Delhi</li>
+                    <li>Mumbai</li>
+                    <li>Bangalore</li>
+                    <li>Hyderabad</li>
+                    <li>Pune</li>
+                  </ul>
                 </div>
               </div>
               <p className="footer-sources">Aggregated from AllEvents, Townscript, District, Meetup & Eventbrite</p>
