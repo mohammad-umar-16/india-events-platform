@@ -42,3 +42,4 @@ data/
 # Debug artifacts from scraper development
 backend/debug-screenshots/
 backend/debug-district-*.json
+zip.py
