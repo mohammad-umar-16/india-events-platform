@@ -1009,7 +1009,6 @@ h1, h2, h3, h4, h5, h6 {
   .page-btn { min-width: 36px; height: 36px; font-size: 0.8rem; }
 }
 
-/* --- Nav single-row layout with centered search (Meetup-style) --- */
 .nav-row {
   display: flex;
   align-items: center;

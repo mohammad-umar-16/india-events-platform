@@ -33,7 +33,7 @@ export const favoritesAPI = {
   getAll: () => api.get('/api/favorites')
 };
 
-// Dashboard API
+// dashboard API
 export const dashboardAPI = {
   getStats: () => api.get('/api/dashboard/stats'),
   getEvents: (params = {}) => api.get('/api/dashboard/events', { params }),
